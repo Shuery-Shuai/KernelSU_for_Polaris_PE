@@ -26,12 +26,19 @@ jobs:
         echo "EXTRA_CMDS=$(cat config.env | grep -w "EXTRA_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "USE_CUSTOM_CLANG=$(cat config.env | grep -w "USE_CUSTOM_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CLANG_SOURCE=$(cat config.env | grep -w "CUSTOM_CLANG_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_CLANG_TAG=$(cat config.env | grep -w "CUSTOM_CLANG_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_CLANG_TYPE=$(cat config.env | grep -w "CUSTOM_CLANG_TYPE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CLANG_BRANCH=$(cat config.env | grep -w "CUSTOM_CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CMDS=$(cat config.env | grep -w "CUSTOM_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "CLANG_BRANCH=$(cat config.env | grep -w "CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CLANG_VERSION=$(cat config.env | grep -w "CLANG_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ENABLE_GCC_ARM64=$(cat config.env | grep -w "ENABLE_GCC_ARM64" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ENABLE_GCC_ARM32=$(cat config.env | grep -w "ENABLE_GCC_ARM32" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_GCC_TAG=$(cat config.env | grep -w "USE_GCC_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "GCC_TAG=$(cat config.env | grep -w "GCC_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_GCC_COMMIT_ID=$(cat config.env | grep -w "USE_GCC_COMMIT_ID" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "GCC_COMMIT_ID=$(cat config.env | grep -w "GCC_COMMIT_ID" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "USE_CLANG_GCC=$(cat config.env | grep -w "USE_CLANG_GCC" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ENABLE_KERNELSU=$(cat config.env | grep -w "ENABLE_KERNELSU" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "KERNELSU_TAG=$(cat config.env | grep -w "KERNELSU_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "ADD_KPROBES_CONFIG=$(cat config.env | grep -w "ADD_KPROBES_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -65,35 +72,64 @@ jobs:
       if: env.USE_CUSTOM_CLANG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        if [[ ${{ env.CUSTOM_CLANG_SOURCE }} =~ git ]]; then
-            if [[ ${{ env.CUSTOM_CLANG_SOURCE }} == *'.tar.gz' ]]; then
-                wget -O clang.tar.gz ${{ env.CUSTOM_CLANG_SOURCE }}
-                mkdir clang-aosp
-                tar -C clang-aosp/ -zxvf clang.tar.gz
-            else
-                git clone ${{ env.CUSTOM_CLANG_SOURCE }} -b ${{ env.CUSTOM_CLANG_BRANCH }} clang-aosp --depth=1
-            fi        
-        else
-            wget -O clang.zip ${{ env.CUSTOM_CLANG_SOURCE }}
+        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "tar.zst" ]; then
+            sudo apt-get install zstd -y
             mkdir clang-aosp
-            unzip clang.zip -d clang-aosp/
+            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/releases/download/${{ env.CUSTOM_CLANG_TAG }}/neutron-clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+            tar -C clang-aosp/ -I zstd -xvf clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+            cd clang-aosp
+            bash ${{ env.GITHUB_WORKSPACE }}/patch-for-old-glibc.sh
+        fi
+        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "zip" ]; then
+            mkdir clang-aosp
+            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/archive/ref/tags/${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+            unzip -d clang-aosp/ clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+        fi
+        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "tar.gz" ]; then
+            mkdir clang-aosp
+            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/archive/ref/tags/${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+            tar -C clang-aosp/ -zxvf clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+        fi
+        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "git" ]; then
+            git clone ${{ env.CUSTOM_CLANG_SOURCE }} -b ${{ env.CUSTOM_CLANG_BRANCH }} --depth=1 clang-aosp/
         fi
 
     - name: Download Gcc-aosp
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         if [ ${{ env.ENABLE_GCC_ARM64 }} = true ]; then
-            mkdir gcc-64
-            wget -O gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-            tar -C gcc-64/ -zxvf gcc-aarch64.tar.gz
-            echo "GCC_64=CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin/aarch64-linux-android-" >> $GITHUB_ENV
+            if [ ${{ env.USE_CLANG_GCC }} = true]; then
+                echo "GCC_64=CROSS_COMPILE=aarch64-linux-gnu-" >> $GITHUB_ENV
+            else
+                if [ ${{ env.USE_GCC_TAG }} = true ]; then
+                    mkdir gcc-64
+                    wget -O gcc-${{ env.GCC_TAG }}-64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/${{ env.GCC_TAG }}.tar.gz
+                    tar -C gcc-64/ -zxvf gcc-${{ env.GCC_TAG }}-64.tar.gz
+                fi
+                if [ ${{ env.USE_GCC_COMMIT_ID }} = true ]; then
+                    mkdir gcc-64
+                    wget -O gcc-${{ env.GCC_COMMIT_ID }}-64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/${{ env.GCC_COMMIT_ID }}.tar.gz
+                    tar -C gcc-64/ -zxvf gcc-${{ env.GCC_COMMIT_ID }}-64.tar.gz
+                fi
+                echo "GCC_64=CROSS_COMPILE=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin/aarch64-linux-android-" >> $GITHUB_ENV
+            fi
         fi
-
         if [ ${{ env.ENABLE_GCC_ARM32 }} = true ]; then
-            mkdir gcc-32
-            wget -O gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz
-            tar -C gcc-32/ -zxvf gcc-arm.tar.gz
-            echo "GCC_32=CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin/arm-linux-androideabi-" >> $GITHUB_ENV
+            if [ ${{ env.USE_CLANG_GCC }} == true]; then
+                echo "GCC_32=CROSS_COMPILE_ARM32=arm-linux-gnueabi-" >> $GITHUB_ENV
+            else
+                if [ ${{ env.USE_GCC_TAG }} = true ]; then
+                    mkdir gcc-32
+                    wget -O gcc-${{ env.GCC_TAG }}-32.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/refs/tags/${{ env.GCC_TAG }}.tar.gz
+                    tar -C gcc-32/ -zxvf gcc-${{ env.GCC_TAG }}-32.tar.gz
+                fi
+                if [ ${{ env.USE_GCC_COMMIT_ID }} = true ]; then
+                    mkdir gcc-32
+                    wget -O gcc-${{ env.GCC_COMMIT_ID }}-32.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/${{ env.GCC_COMMIT_ID }}.tar.gz
+                    tar -C gcc-32/ -zxvf gcc-${GCC_COMMIT_ID }}-32.tar.gz
+                fi
+                echo "GCC_32=CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin/arm-linux-androideabi-" >> $GITHUB_ENV
+            fi
         fi
 
     - name: Download mkbootimg tools
@@ -105,7 +141,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} android-kernel --depth=1
+        git clone ${{ env.KERNEL_SOURCE  }} -b ${{ env.KERNEL_SOURCE_BRANCH }} android-kernel --depth=1
 
     - name: Download source boot image
       if: env.BUILD_BOOT_IMG == 'true'
