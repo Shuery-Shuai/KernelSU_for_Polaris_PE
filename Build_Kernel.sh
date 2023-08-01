@@ -51,8 +51,8 @@ ADD_OVERLAYFS_CONFIG=true
 
 # AnyKernel3
 ## Whether reclone anykernel3 if it already exists.
-CLONE_ANYNERNEL3=false
-ANYKERNEL_DEVICE_NAME_1=polairs
+CLONE_ANYNERNEL3=true
+ANYKERNEL_DEVICE_NAME_1=polaris
 ANYKERNEL_DEVICE_NAME_2=
 ANYKERNEL_DEVICE_NAME_3=
 ANYKERNEL_DEVICE_NAME_4=
@@ -346,13 +346,13 @@ if [ ${CHECK_FILE_IS_OK} == true ]; then
     else
         git clone https://github.com/osm0sis/AnyKernel3
     fi
-    sed -i 's/device.name1=maguro/device.name1=${ANYKERNEL_DEVICE_NAME_1}/g' AnyKernel3/anykernel.sh
-    sed -i 's/device.name2=maguro/device.name2=${ANYKERNEL_DEVICE_NAME_2}/g' AnyKernel3/anykernel.sh
-    sed -i 's/device.name3=maguro/device.name3=${ANYKERNEL_DEVICE_NAME_3}/g' AnyKernel3/anykernel.sh
-    sed -i 's/device.name4=maguro/device.name4=${ANYKERNEL_DEVICE_NAME_4}/g' AnyKernel3/anykernel.sh
-    sed -i 's/device.name5=maguro/device.name5=${ANYKERNEL_DEVICE_NAME_5}/g' AnyKernel3/anykernel.sh
-    sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=${ANYKERNEL_BLOCK};!g' AnyKernel3/anykernel.sh
-    sed -i 's/is_slot_device=0;/is_slot_device=${ANYKERNEL_IS_SLOT_DEVICE};/g' AnyKernel3/anykernel.sh
+    sed -i "s/device.name1=maguro/device.name1=\\${ANYKERNEL_DEVICE_NAME_1}/g" AnyKernel3/anykernel.sh
+    sed -i "s/device.name2=toro/device.name2=\\${ANYKERNEL_DEVICE_NAME_2}/g" AnyKernel3/anykernel.sh
+    sed -i "s/device.name3=toroplus/device.name3=\\${ANYKERNEL_DEVICE_NAME_3}/g" AnyKernel3/anykernel.sh
+    sed -i "s/device.name4=tuna/device.name4=\\${ANYKERNEL_DEVICE_NAME_4}/g" AnyKernel3/anykernel.sh
+    sed -i "s/device.name5=/device.name5=\\${ANYKERNEL_DEVICE_NAME_5}/g" AnyKernel3/anykernel.sh
+    sed -i "s!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=\\${ANYKERNEL_BLOCK};!g" AnyKernel3/anykernel.sh
+    sed -i "s/is_slot_device=0;/is_slot_device=\\${ANYKERNEL_IS_SLOT_DEVICE};/g" AnyKernel3/anykernel.sh
     cp android-kernel/out/arch/${ARCH}/boot/${KERNEL_IMAGE_NAME} AnyKernel3/
     if [[ ${CHECK_DTBO_IS_OK} == true ]]; then
         cp android-kernel/out/arch/${ARCH}/boot/dtbo.img AnyKernel3/
