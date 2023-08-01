@@ -6,7 +6,7 @@ KERNEL_SOURCE_BRANCH=thirteen
 KERNEL_CONFIG=polaris_defconfig
 KERNEL_IMAGE_NAME=Image.gz-dtb
 ARCH=arm64
-EXTRA_CMDS="LD=ld.lld"
+EXTRA_CMDS="LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf OBJSIZE=llvm-size STRIP=llvm-strip LDGOLD=aarch64-linux-gnu-ld.gold LLVM_AR=llvm-ar LLVM_DIS=llvm-dis"
 
 # Clang
 ## Custom
@@ -98,7 +98,8 @@ fi
 # Download Custom-Clang
 if [ ${USE_CUSTOM_CLANG} == true ]; then
     cd $WORKSPACE/kernel_workspace
-    if [ ${CUSTOM_CLANG_SOURCE} == "*.tar.zst" ]; then
+    case ${CUSTOM_CLANG_SOURCE} in
+    *.tar.gz)
         if [ -d "${CUSTOM_CLANG_NAME}" ]; then
             echo "${CUSTOM_CLANG_NAME} exists."
         else
@@ -113,8 +114,8 @@ if [ ${USE_CUSTOM_CLANG} == true ]; then
             cd ${CUSTOM_CLANG_NAME}
             bash ${WORKSPACE}/patch-for-old-glibc.sh
         fi
-    fi
-    if [ ${CUSTOM_CLANG_SOURCE} == "*.zip" ]; then
+        ;;
+    *.zip)
         if [ -d "${CUSTOM_CLANG_NAME}" ]; then
             echo "${CUSTOM_CLANG_NAME} exists."
         else
@@ -126,8 +127,8 @@ if [ ${USE_CUSTOM_CLANG} == true ]; then
             mkdir ${CUSTOM_CLANG_NAME}
             unzip -d ${CUSTOM_CLANG_NAME} ${CUSTOM_CLANG_NAME}.zip
         fi
-    fi
-    if [ ${CUSTOM_CLANG_SOURCE} == "*.tar.gz" ]; then
+        ;;
+    *.tar.gz)
         if [ -d "${CUSTOM_CLANG_NAME}" ]; then
             echo "${CUSTOM_CLANG_NAME} exists."
         else
@@ -139,17 +140,19 @@ if [ ${USE_CUSTOM_CLANG} == true ]; then
             mkdir ${CUSTOM_CLANG_NAME}
             tar -C ${CUSTOM_CLANG_NAME} -zxvf ${CUSTOM_CLANG_NAME}.tar.gz
         fi
-    fi
-    if [ ${CUSTOM_CLANG_SOURCE} == "*.git" ]; then
+        ;;
+    *.git)
         if [ ${CLONE_CUSTOM_CLANG} == true ]; then
             if [ -d "${CUSTOM_CLANG_NAME}" ]; then
                 rm -rf ${CUSTOM_CLANG_NAME}
             fi
             git clone ${CUSTOM_CLANG_SOURCE} -b ${CUSTOM_CLANG_BRANCH} --depth=1 ${CUSTOM_CLANG_NAME}/
         fi
-    else
+        ;;
+    *)
         echo "The source you use is unsupported, please check it out! If you use git link please make sure you put '.git' at the end of the source!"
-    fi
+        ;;
+    esac
 fi
 
 # Download Gcc-aosp
