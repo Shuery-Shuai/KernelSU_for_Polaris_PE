@@ -26,9 +26,8 @@ jobs:
         echo "EXTRA_CMDS=$(cat config.env | grep -w "EXTRA_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "USE_CUSTOM_CLANG=$(cat config.env | grep -w "USE_CUSTOM_CLANG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CLANG_SOURCE=$(cat config.env | grep -w "CUSTOM_CLANG_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "CUSTOM_CLANG_TAG=$(cat config.env | grep -w "CUSTOM_CLANG_TAG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "CUSTOM_CLANG_TYPE=$(cat config.env | grep -w "CUSTOM_CLANG_TYPE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CLANG_BRANCH=$(cat config.env | grep -w "CUSTOM_CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+        echo "CUSTOM_CLANG_NAME=$(cat config.env | grep -w "CUSTOM_CLANG_NAME" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CUSTOM_CMDS=$(cat config.env | grep -w "CUSTOM_CMDS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
         echo "CLANG_BRANCH=$(cat config.env | grep -w "CLANG_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
         echo "CLANG_VERSION=$(cat config.env | grep -w "CLANG_VERSION" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -72,26 +71,24 @@ jobs:
       if: env.USE_CUSTOM_CLANG == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "tar.zst" ]; then
+        mkdir ${{ env.CUSTOM_CLANG_NAME }}
+        if [ ${{ env.CUSTOM_CLANG_SOURCE }} == "*.tar.zst" ]; then
             sudo apt-get install zstd -y
-            mkdir clang-aosp
-            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/releases/download/${{ env.CUSTOM_CLANG_TAG }}/neutron-clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
-            tar -C clang-aosp/ -I zstd -xvf clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
-            cd clang-aosp
+            wget -O ${{ env.CUSTOM_CLANG_NAME }}.tar.zst ${{ env.CUSTOM_CLANG_SOURCE }}
+            tar -C ${{ env.CUSTOM_CLANG_NAME }} -I zstd -xvf ${{ env.CUSTOM_CLANG_NAME }}.tar.zst
+            cd ${{ env.CUSTOM_CLANG_NAME }}
             bash ${{ env.GITHUB_WORKSPACE }}/patch-for-old-glibc.sh
         fi
-        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "zip" ]; then
-            mkdir clang-aosp
-            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/archive/ref/tags/${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
-            unzip -d clang-aosp/ clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+        if [ ${{ env.CUSTOM_CLANG_SOURCE }} == "*.zip" ]; then
+            wget -O ${{ env.CUSTOM_CLANG_NAME }}.zip ${{ env.CUSTOM_CLANG_SOURCE }}
+            unzip -d ${{ env.CUSTOM_CLANG_NAME }} ${{ env.CUSTOM_CLANG_SOURCE }}.zip
         fi
-        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "tar.gz" ]; then
-            mkdir clang-aosp
-            wget -O clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }} ${{ env.CUSTOM_CLANG_SOURCE }}/archive/ref/tags/${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
-            tar -C clang-aosp/ -zxvf clang-${{ env.CUSTOM_CLANG_TAG }}.${{ env.CUSTOM_CLANG_TYPE }}
+        if [ ${{ env.CUSTOM_CLANG_SOURCE }} == "*.tar.gz" ]; then
+            wget -O ${{ env.CUSTOM_CLANG_NAME }}.tar.gz ${{ env.CUSTOM_CLANG_SOURCE }}
+            tar -C ${{ env.CUSTOM_CLANG_NAME }} -zxvf ${{ env.CUSTOM_CLANG_SOURCE }}.tar.gz
         fi
-        if [ ${{ env.CUSTOM_CLANG_TYPE }} == "git" ]; then
-            git clone ${{ env.CUSTOM_CLANG_SOURCE }} -b ${{ env.CUSTOM_CLANG_BRANCH }} --depth=1 clang-aosp/
+        if [ ${{ env.CUSTOM_CLANG_SOURCE }} == "git" ]; then
+            git clone ${{ env.CUSTOM_CLANG_SOURCE }} -b ${{ env.CUSTOM_CLANG_BRANCH }} --depth=1 ${{ env.CUSTOM_CLANG_NAME }}/
         fi
 
     - name: Download Gcc-aosp

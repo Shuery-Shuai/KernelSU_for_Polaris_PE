@@ -11,13 +11,13 @@ EXTRA_CMDS="LD=ld.lld"
 # Clang
 ## Custom
 USE_CUSTOM_CLANG=true
-CUSTOM_CLANG_SOURCE=https://github.com/kdrag0n/proton-clang
-CUSTOM_CLANG_TAG=
-CUSTOM_CLANG_TYPE=git
+CUSTOM_CLANG_SOURCE=https://github.com/kdrag0n/proton-clang.git
 CUSTOM_CLANG_BRANCH=master
+CUSTOM_CLANG_NAME=proton-clang
+### if you set CLONE_CUSTOM_CLANG to true then it will remove old files and reclone them.
 CLONE_CUSTOM_CLANG=true
 
-### if your set USE CUSTOM CLANG to false than DO NOT CHANGE CUSTOM CMDS
+### if you set USE CUSTOM CLANG to false than DO NOT CHANGE CUSTOM CMDS
 CUSTOM_CMDS="CLANG_TRIPLE=aarch64-linux-gnu-"
 
 ## AOSP
@@ -98,66 +98,57 @@ fi
 # Download Custom-Clang
 if [ ${USE_CUSTOM_CLANG} == true ]; then
     cd $WORKSPACE/kernel_workspace
-    if [ ${CUSTOM_CLANG_TYPE} == "tar.zst" ]; then
-        sudo apt-get install zstd -y
-        if [ -f "clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}" ]; then
-            if [ -d "clang-aosp" ]; then
-                echo "Custom Clang exits."
-            else
-                tar -C clang-aosp/ -I zstd -xvf clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-                cd clang-aosp
-                bash ${WORKSPACE}/patch-for-old-glibc.sh
-            fi
+    if [ ${CUSTOM_CLANG_SOURCE} == "*.tar.zst" ]; then
+        if [ -d "${CUSTOM_CLANG_NAME}" ]; then
+            echo "${CUSTOM_CLANG_NAME} exists."
         else
-            if [ -d "clang-aosp" ]; then
-                rm -rf clang-aosp
+            sudo apt-get install zstd -y
+            if [ -f "${CUSTOM_CLANG_NAME}.tar.zst" ]; then
+                echo "${CUSTOM_CLANG_NAME}.tar.zst exists."
+            else
+                wget -O ${CUSTOM_CLANG_NAME}.tar.zst ${CUSTOM_CLANG_SOURCE}
             fi
-            mkdir clang-aosp
-            wget -O clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE} ${CUSTOM_CLANG_SOURCE}/releases/download/${CUSTOM_CLANG_TAG}/neutron-clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            tar -C clang-aosp/ -I zstd -xvf clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            cd clang-aosp
+            mkdir ${CUSTOM_CLANG_NAME}
+            tar -C ${CUSTOM_CLANG_NAME} -I zstd -xvf ${CUSTOM_CLANG_NAME}.tar.zst
+            cd ${CUSTOM_CLANG_NAME}
             bash ${WORKSPACE}/patch-for-old-glibc.sh
         fi
     fi
-    if [ ${CUSTOM_CLANG_TYPE} == "zip" ]; then
-        if [ -f "clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}" ]; then
-            if [ -d "clang-aosp" ]; then
-                echo "Custom Clang exits."
-            else
-                unzip -d clang-aosp/ clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            fi
+    if [ ${CUSTOM_CLANG_SOURCE} == "*.zip" ]; then
+        if [ -d "${CUSTOM_CLANG_NAME}" ]; then
+            echo "${CUSTOM_CLANG_NAME} exists."
         else
-            if [ -d "clang-aosp" ]; then
-                rm -rf clang-aosp
+            if [ -f "${CUSTOM_CLANG_NAME}.zip" ]; then
+                echo "${CUSTOM_CLANG_NAME}.zip exists."
+            else
+                wget -O ${CUSTOM_CLANG_NAME}.zip ${CUSTOM_CLANG_SOURCE}
             fi
-            mkdir clang-aosp
-            wget -O clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE} ${CUSTOM_CLANG_SOURCE}/archive/ref/tags/${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            unzip -d clang-aosp/ clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
+            mkdir ${CUSTOM_CLANG_NAME}
+            unzip -d ${CUSTOM_CLANG_NAME} ${CUSTOM_CLANG_NAME}.zip
         fi
     fi
-    if [ ${CUSTOM_CLANG_TYPE} == "tar.gz" ]; then
-        if [ -f "clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}" ]; then
-            if [ -d "clang-aosp" ]; then
-                echo "Custom Clang exits."
-            else
-                tar -C clang-aosp/ -zxvf clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            fi
+    if [ ${CUSTOM_CLANG_SOURCE} == "*.tar.gz" ]; then
+        if [ -d "${CUSTOM_CLANG_NAME}" ]; then
+            echo "${CUSTOM_CLANG_NAME} exists."
         else
-            if [ -d "clang-aosp" ]; then
-                rm -rf clang-aosp
+            if [ -f "${CUSTOM_CLANG_NAME}.tar.gz" ]; then
+                echo "${CUSTOM_CLANG_NAME}.tar.gz exists."
+            else
+                wget -O ${CUSTOM_CLANG_NAME}.tar.gz ${CUSTOM_CLANG_SOURCE}
             fi
-            mkdir clang-aosp
-            wget -O clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE} ${CUSTOM_CLANG_SOURCE}/archive/ref/tags/${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
-            tar -C clang-aosp/ -zxvf clang-${CUSTOM_CLANG_TAG}.${CUSTOM_CLANG_TYPE}
+            mkdir ${CUSTOM_CLANG_NAME}
+            tar -C ${CUSTOM_CLANG_NAME} -zxvf ${CUSTOM_CLANG_NAME}.tar.gz
         fi
     fi
-    if [ ${CUSTOM_CLANG_TYPE} == "git" ]; then
+    if [ ${CUSTOM_CLANG_SOURCE} == "*.git" ]; then
         if [ ${CLONE_CUSTOM_CLANG} == true ]; then
-            if [ -d "clang-aosp" ]; then
-                rm -rf clang-aosp
+            if [ -d "${CUSTOM_CLANG_NAME}" ]; then
+                rm -rf ${CUSTOM_CLANG_NAME}
             fi
-            git clone ${CUSTOM_CLANG_SOURCE} -b ${CUSTOM_CLANG_BRANCH} --depth=1 clang-aosp/
+            git clone ${CUSTOM_CLANG_SOURCE} -b ${CUSTOM_CLANG_BRANCH} --depth=1 ${CUSTOM_CLANG_NAME}/
         fi
+    else
+        echo "The source you use is unsupported, please check it out! If you use git link please make sure you put '.git' at the end of the source!"
     fi
 fi
 
