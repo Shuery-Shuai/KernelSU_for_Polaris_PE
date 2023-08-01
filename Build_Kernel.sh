@@ -50,6 +50,8 @@ ADD_KPROBES_CONFIG=true
 ADD_OVERLAYFS_CONFIG=true
 
 # AnyKernel3
+## Whether reclone anykernel3 if it already exists.
+CLONE_ANYNERNEL3=false
 ANYKERNEL_DEVICE_NAME_1=polairs
 ANYKERNEL_DEVICE_NAME_2=
 ANYKERNEL_DEVICE_NAME_3=
@@ -335,7 +337,15 @@ fi
 # Make Anykernel3
 if [ ${CHECK_FILE_IS_OK} == true ]; then
     cd $WORKSPACE/kernel_workspace
-    git clone https://github.com/osm0sis/AnyKernel3
+    if [ -d "$WORKSPACE/kernel_workspace/AnyKernel3" ]; then
+        echo "AnyKernel3 exists."
+        if [ ${CLONE_ANYNERNEL3} == true ]; then
+            rm -rf $WORKSPACE/kernel_workspace/AnyKernel3
+            git clone https://github.com/osm0sis/AnyKernel3
+        fi
+    else
+        git clone https://github.com/osm0sis/AnyKernel3
+    fi
     sed -i 's/device.name1=maguro/device.name1=${ANYKERNEL_DEVICE_NAME_1}/g' AnyKernel3/anykernel.sh
     sed -i 's/device.name2=maguro/device.name2=${ANYKERNEL_DEVICE_NAME_2}/g' AnyKernel3/anykernel.sh
     sed -i 's/device.name3=maguro/device.name3=${ANYKERNEL_DEVICE_NAME_3}/g' AnyKernel3/anykernel.sh
