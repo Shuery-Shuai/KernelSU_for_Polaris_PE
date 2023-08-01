@@ -298,7 +298,7 @@ fi
 
 # Build kernel
 cd $WORKSPACE/kernel_workspace/android-kernel
-export PATH=$WORKSPACE/kernel_workspace/clang-aosp/bin:$PATH
+export PATH=$WORKSPACE/kernel_workspace/$CUSTOM_CLANG_NAME/bin:$PATH
 export KBUILD_BUILD_HOST=LocalHost
 export KBUILD_BUILD_USER=$(echo ${Actor} | tr A-Z a-z)
 if [ ! -z ${KSU_EXPECTED_SIZE} ] && [ ! -z ${KSU_EXPECTED_HASH} ]; then
