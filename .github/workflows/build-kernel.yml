@@ -100,7 +100,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           if [ ${{ env.ENABLE_GCC_ARM64 }} = true ]; then
-              if [ ${{ env.USE_CLANG_GCC }} = true]; then
+              if [ ${{ env.USE_CLANG_GCC }} = true ]; then
                   echo "GCC_64=CROSS_COMPILE=aarch64-linux-gnu-" >> $GITHUB_ENV
               else
                   if [ ${{ env.USE_GCC_TAG }} = true ]; then
@@ -117,7 +117,7 @@ jobs:
               fi
           fi
           if [ ${{ env.ENABLE_GCC_ARM32 }} = true ]; then
-              if [ ${{ env.USE_CLANG_GCC }} == true]; then
+              if [ ${{ env.USE_CLANG_GCC }} == true ]; then
                   echo "GCC_32=CROSS_COMPILE_ARM32=arm-linux-gnueabi-" >> $GITHUB_ENV
               else
                   if [ ${{ env.USE_GCC_TAG }} = true ]; then

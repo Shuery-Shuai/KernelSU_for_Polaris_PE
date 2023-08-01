@@ -158,7 +158,7 @@ fi
 # Download Gcc-aosp
 cd $WORKSPACE/kernel_workspace
 if [ ${ENABLE_GCC_ARM64} = true ]; then
-    if [ ${USE_CLANG_GCC} = true]; then
+    if [ ${USE_CLANG_GCC} = true ]; then
         GCC_64="CROSS_COMPILE=aarch64-linux-gnu-"
     else
         if [ ${USE_GCC_TAG} = true ]; then
@@ -199,7 +199,7 @@ if [ ${ENABLE_GCC_ARM64} = true ]; then
     fi
 fi
 if [ ${ENABLE_GCC_ARM32} = true ]; then
-    if [ ${USE_CLANG_GCC} == true]; then
+    if [ ${USE_CLANG_GCC} == true ]; then
         GCC_32="CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
     else
         if [ ${USE_GCC_TAG} = true ]; then
