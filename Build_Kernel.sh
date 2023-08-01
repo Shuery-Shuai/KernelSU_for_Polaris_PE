@@ -344,7 +344,7 @@ if [ ${CHECK_FILE_IS_OK} == true ]; then
     sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=${ANYKERNEL_BLOCK};!g' AnyKernel3/anykernel.sh
     sed -i 's/is_slot_device=0;/is_slot_device=${ANYKERNEL_IS_SLOT_DEVICE};/g' AnyKernel3/anykernel.sh
     cp android-kernel/out/arch/${ARCH}/boot/${KERNEL_IMAGE_NAME} AnyKernel3/
-    if [ ${CHECK_DTBO_IS_OK} = true ]; then
+    if [ ${CHECK_DTBO_IS_OK} == true ]; then
         cp android-kernel/out/arch/${ARCH}/boot/dtbo.img AnyKernel3/
     fi
     rm -rf AnyKernel3/.git* AnyKernel3/README.md
