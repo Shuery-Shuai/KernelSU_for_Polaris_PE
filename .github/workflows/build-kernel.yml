@@ -43,13 +43,8 @@ jobs:
           echo "ADD_KPROBES_CONFIG=$(cat config.env | grep -w "ADD_KPROBES_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "DISABLE-LTO=$(cat config.env | grep -w "DISABLE-LTO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "ADD_OVERLAYFS_CONFIG=$(cat config.env | grep -w "ADD_OVERLAYFS_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_DEVICE_NAME_1=$(cat config.env | grep -w "ANYKERNEL_DEVICE_NAME_1" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_DEVICE_NAME_2=$(cat config.env | grep -w "ANYKERNEL_DEVICE_NAME_2" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_DEVICE_NAME_3=$(cat config.env | grep -w "ANYKERNEL_DEVICE_NAME_3" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_DEVICE_NAME_4=$(cat config.env | grep -w "ANYKERNEL_DEVICE_NAME_4" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_DEVICE_NAME_5=$(cat config.env | grep -w "ANYKERNEL_DEVICE_NAME_5" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_BLOCK=$(cat config.env | grep -w "ANYKERNEL_BLOCK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-          echo "ANYKERNEL_IS_SLOT_DEVICE=$(cat config.env | grep -w "ANYKERNEL_BLOCK" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "ANYKERNEL_SOURCE=$(cat config.env | grep -w "ANYKERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
+          echo "ANYKERNEL_BRANCH=$(cat config.env | grep -w "ANYKERNEL_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "DISABLE_CC_WERROR=$(cat config.env | grep -w "DISABLE_CC_WERROR" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "ENABLE_CCACHE=$(cat config.env | grep -w "ENABLE_CCACHE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "NEED_DTBO=$(cat config.env | grep -w "NEED_DTBO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -237,14 +232,12 @@ jobs:
         if: env.CHECK_FILE_IS_OK == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
-          git clone https://github.com/osm0sis/AnyKernel3
-          sed -i "s/device.name1=maguro/device.name1=\\${{ env.ANYKERNEL_DEVICE_NAME_1 }}/g" AnyKernel3/anykernel.sh
-          sed -i "s/device.name2=toro/device.name2=\\${{ env.ANYKERNEL_DEVICE_NAME_2 }}/g" AnyKernel3/anykernel.sh
-          sed -i "s/device.name3=toroplus/device.name3=\\${{ env.ANYKERNEL_DEVICE_NAME_3 }}/g" AnyKernel3/anykernel.sh
-          sed -i "s/device.name4=tuna/device.name4=\\${{ env.ANYKERNEL_DEVICE_NAME_4 }}/g" AnyKernel3/anykernel.sh
-          sed -i "s/device.name5=/device.name5=\\${{ env.ANYKERNEL_DEVICE_NAME_5 }}/g" AnyKernel3/anykernel.sh
-          sed -i "s!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=\\${{ env.ANYKERNEL_BLOCK }};!g" AnyKernel3/anykernel.sh
-          sed -i "s/is_slot_device=0;/is_slot_device=\\${{ env.ANYKERNEL_IS_SLOT_DEVICE }};/g" AnyKernel3/anykernel.sh
+          git clone ${{ env.ANYKERNEL_SOURCE }} -b ${{ ANYKERNEL_BRANCH }} --depth=1 AnyKernel3/
+
+
+
+
+
           cp android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} AnyKernel3/
           if [[ ${{ env.CHECK_DTBO_IS_OK }} == true ]]; then
               cp android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img AnyKernel3/
