@@ -346,6 +346,7 @@ if [ ${CHECK_FILE_IS_OK} == true ]; then
         cp android-kernel/out/arch/${ARCH}/boot/dtbo.img AnyKernel3/
     fi
     rm -rf AnyKernel3/.git* AnyKernel3/README.md
+    zip -rv AnyKernel3${UPLOADNAME}-${DEVICE}-${BUILD_TIME}.zip AnyKernel3/*
 fi
 
 # Make boot image
