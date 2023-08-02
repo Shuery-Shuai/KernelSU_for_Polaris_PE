@@ -232,7 +232,7 @@ jobs:
         if: env.CHECK_FILE_IS_OK == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
-          git clone ${{ env.ANYKERNEL_SOURCE }} -b ${{ ANYKERNEL_BRANCH }} --depth=1 AnyKernel3/
+          git clone ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_BRANCH }} --depth=1 AnyKernel3/
 
 
 
