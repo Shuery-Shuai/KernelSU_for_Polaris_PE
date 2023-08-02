@@ -233,11 +233,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           git clone ${{ env.ANYKERNEL_SOURCE }} -b ${{ env.ANYKERNEL_BRANCH }} --depth=1 AnyKernel3/
-
-
-
-
-
           cp android-kernel/out/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} AnyKernel3/
           if [[ ${{ env.CHECK_DTBO_IS_OK }} == true ]]; then
               cp android-kernel/out/arch/${{ env.ARCH }}/boot/dtbo.img AnyKernel3/

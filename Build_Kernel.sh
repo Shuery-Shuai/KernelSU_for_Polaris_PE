@@ -55,9 +55,6 @@ ANYKERNEL_BRANCH=polaris
 ## Whether reclone anykernel3 if it already exists.
 CLONE_ANYNERNEL3=true
 
-
-
-
 # Ccache
 ENABLE_CCACHE=false
 
@@ -344,10 +341,6 @@ if [ ${CHECK_FILE_IS_OK} == true ]; then
     else
         git clone ${ANYKERNEL_SOURCE} -b ${ANYKERNEL_BRANCH} --depth=1 AnyKernel3/
     fi
-
-
-
-
     cp android-kernel/out/arch/${ARCH}/boot/${KERNEL_IMAGE_NAME} AnyKernel3/
     if [[ ${CHECK_DTBO_IS_OK} == true ]]; then
         cp android-kernel/out/arch/${ARCH}/boot/dtbo.img AnyKernel3/
