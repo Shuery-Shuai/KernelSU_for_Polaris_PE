@@ -1,4 +1,4 @@
-WORKSPACE=.
+WORKSPACE=${HOME}/KernelSU_for_Polaris_PE
 Actor=Shuery
 DOWNLOAD_KERNEL_SOURCE=true
 KERNEL_SOURCE=https://github.com/PixelExperience-Devices/kernel_xiaomi_polaris
